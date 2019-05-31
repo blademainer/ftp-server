@@ -1,0 +1,28 @@
+language: go
+go:
+- 1.11.x
+- 1.12.x
+- 1.x
+services:
+- docker
+env:
+  global:
+  - GO111MODULE=on
+  - BASE_REPO=blademainer/ftp-server
+  - DOCKER_TAG=${TRAVIS_COMMIT:0:7}
+  - DEV_REPO=${BASE_REPO}:$DOCKER_TAG
+  - RELEASE_REPO=${BASE_REPO}:$TRAVIS_TAG
+  - LATEST_REPO=${BASE_REPO}:latest
+  - secure: XDCzVcNoFT3hYU1h+mfYTf3yvlLHHZRb449zniZduEvV7FXoaZmpoa90vP2X7V2ekHCZx8wI8Zv0RtWa/F+q2v95ynfqtxKiQYhTLyXLXa1hkWbIrb4cD4/fYlEA72MKA1wUJ6Q8EZYUvAKltazERojXLlFMihHBfb5AZkY2ZsoSDwCERGHlJ9zAeeOK+xWvqbnmwbkJA7bL0fl9Y+xohEd74mtRAbIJPsas/Hwglu1vQAhcLoE/lzcVAKFw1aOzUmFJW6M5w3qXA/nnmE3QoEjEkN4q5Wirc3UnbA33dW1j61pKqKUjQqnJJOXY/QN8CblsZ4E1ZwIOr+OiUh759b70vj4+ac0kBpGDNP75/npHo+lWboWm6CrkQkM2303ptvzRcPKqHMpq2uqIJvzScCsdzcVaYKCPRtRCyI/J374ZtgSgtb9ax+M/7vNJrn8J/RRcz/O08tgor3qQMCKnY+G+Te07thKQPIUmwaYJHnk0F9OKsO6x9eWSOl7xSqJha4ZMKEgRRxdx+Ax39fvea7HD92LIkShrSFhGKoY5qoTeOKEW4LFJZfkAqC2aC/uhzCXdX0XRLzynS+U6PY62A3lBt//+8+3BOqitdpC7brFgJGlNT/32ipyX0TtsPePB9ixT+qezlyWbudJhpKmDEEwzK6bmX6+FYNCAfC+fI9A=
+  - secure: h3/T6i7sHRT27YJ6n/gfQnd0buoqeMzEeQkXKWmBjKhK8bgAcWxldAWZrqrohr3MsbdlCq10CxePUaG716a9gipL/GeDpHbqgn5QLFWuQ2EHGrLNEPYNEXmY47JzWao+rrQVGuHMKdDlagKlIyMACnyjH60b1VXQaR57EukJZN4ASkAzEiAFrgVWC47RJQ3Zg0xUhDkgsJdl6i7vr0SSssXjuqy0pnpPP2592I2ytMSzpUlgSaRgU4t3cIrfpAiU9ESHVwWyHu0H5vNbTSK33BP2V/odtYxJtuqWLgfxSap1mfjNPgKjBtBQyA7pa3jb2zMNuaWuxAi+GsdC4Zu3nfdg0CbBuaiy4ikBGzUZ5IFXaxsZydnj/HT1tBdMdLC8sUr3F1PPvJW2NAWFKlnD2co6INOPvGHRJ8YRKtWclwcSKpMGp9KLy90uXfXHGqwEcP/XjIXoUgD1APcp7bp1iz8jut9+LLPZ0Ao46rN+V9tlf2llj2gFMu9ym/Fv2CgglK3XtTNAA6f7q4jOpwEf81jXUuvlA7hAWD9r+G+oewpQK03aiMuiTT4oVJ/NI+4miYeKqBSrIXLfQcLzZ/i31M3fV4akvnPTtVwXiozEyZq+B9nvN/kZpbTKIO7LokxPCAZObqPG7W7K6r8IUFPxNdaIHxuEnmyz9cWnLi813YA=
+before_install:
+- chmod +x *.sh
+- env
+- docker login -u$DOCKER_USER -p$DOCKER_PASS
+install:
+- "./go_build.sh"
+- if [[ -z "$TRAVIS_TAG" ]]; then docker build ./ -t $DEV_REPO && docker push $DEV_REPO;
+  fi
+- if [[ -n "$TRAVIS_TAG" ]]; then docker pull $DEV_REPO && docker tag $DEV_REPO $RELEASE_REPO
+  && docker tag $DEV_REPO $LATEST_REPO && docker push $RELEASE_REPO && docker push
+  $LATEST_REPO; fi
