@@ -16,7 +16,6 @@ before_install:
 - env
 - docker login -u$DOCKER_USER -p$DOCKER_PASS
 install:
-- "./go_build.sh"
 - if [[ -z "$TRAVIS_TAG" ]]; then docker build ./ -t $DEV_REPO && docker push $DEV_REPO;
   fi
 - if [[ -n "$TRAVIS_TAG" ]]; then docker pull $DEV_REPO && docker tag $DEV_REPO $RELEASE_REPO
